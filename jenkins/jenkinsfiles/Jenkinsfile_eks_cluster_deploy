@@ -1,25 +1,131 @@
 #!groovy
 
-pipeline {
-    agent none // Permite definir agentes específicos para cada etapa
-    stages {
-        stage('Build') {
-            agent { docker { image 'maven:3-alpine' } }
-            steps {
-                // Pasos del build
-                sh 'mvn --version'
-            }
-        }
-        // Otros stages...
+def getMfa() {
+  def mfa = input(
+          message: "Enter MFA Token",
+          parameters: [[$class: 'StringParameterDefinition', name: 'mfa', trim: true]]
+  )
+  return mfa
+}
+
+def assumeRole(String userName, String roleArn = "role_arn_to_be_assumed", String trustedAccount) {
+  def jsonCreds
+  def mfa = getMfa()
+  withEnv(["AWS_ACCESS_KEY_ID=${env.IAM_ACCESS_KEY}", "AWS_SECRET_ACCESS_KEY=${env.IAM_SECRET_KEY}"]) {
+    jsonCreds = sh(script: """
+      aws sts assume-role \
+        --role-arn ${roleArn} \
+        --serial-number arn:aws:iam::${trustedAccount}:mfa/${userName} \
+        --query 'Credentials' \
+        --token-code ${mfa} \
+        --role-session-name ${userName}
+    """, returnStdout: true)
+  }
+  def jsonedCreds = readJSON text: "${jsonCreds}"
+  return jsonedCreds
+}
+
+def getSessionToken(String userName, String roleArn = "role_arn_to_be_assumed", String trustedAccount) {
+  def jsonCreds
+  def mfa = getMfa()
+  withEnv(["AWS_ACCESS_KEY_ID=${env.IAM_ACCESS_KEY}", "AWS_SECRET_ACCESS_KEY=${env.IAM_SECRET_KEY}"]) {
+    jsonCreds = sh(script: """
+      aws sts get-session-token \\
+        --duration-seconds 1800 \\
+        --serial-number arn:aws:iam::${trustedAccount}:mfa/${userName} \\
+        --token-code ${mfa}
+    """, returnStdout: true)
+  }
+  def jsonedCreds = readJSON text: "${jsonCreds}"
+
+  return jsonedCreds.Credentials
+}
+
+def getCredentials(String dockerAgentImage) {
+  def jsonCreds
+  docker.image(dockerAgentImage).inside {
+    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: "oca-qa-account"]]) {
+      jsonCreds = sh(script: """
+        aws sts get-session-token \\
+          --duration-seconds 1800
+      """, returnStdout: true)
     }
-    post {
-        always {
-            // Limpieza: Eliminar la imagen Docker después del build, si así lo deseas
-            cleanWs() // Limpia el workspace
-            script {
-                // Este paso es opcional y solo necesario si deseas forzar la eliminación de la imagen después de cada build.
-                sh "docker rmi maven:3-alpine"
-            }
-        }
+  }
+  def jsonedCreds = readJSON text: "${jsonCreds}"
+  env.awsAccessKey = jsonedCreds.Credentials.AccessKeyId
+  env.awsSecretAccessKey = jsonedCreds.Credentials.SecretAccessKey
+  env.awsSessionToken = jsonedCreds.Credentials.SessionToken
+}
+
+def setEnvironmentAuthInfo(String useServiceCredentials, String dockerAgentImage) {
+  def environmentAuthInfo = []
+  if (useServiceCredentials == "1") {
+    getCredentials(dockerAgentImage)
+    environmentAuthInfo = ["AWS_ACCESS_KEY_ID=${env.awsAccessKey}", "AWS_SECRET_ACCESS_KEY=${env.awsSecretAccessKey}", "AWS_SESSION_TOKEN=${env.awsSessionToken}"]
+  } else {
+    docker.image(dockerAgentImage).inside {
+      awsCreds = getSessionToken("${env.IAM_USER}", "${env.IAM_ROLE_ARN}", "${env.IAM_ACCOUNT}")
+      environmentAuthInfo = ["AWS_ACCESS_KEY_ID=${awsCreds.AccessKeyId}", "AWS_SECRET_ACCESS_KEY=${awsCreds.SecretAccessKey}", "AWS_SESSION_TOKEN=${awsCreds.SessionToken}"]
     }
+  }
+  return environmentAuthInfo
+}
+
+def useServiceCredentials = "${env.USE_SERVICE_CREDENTIALS}"
+def environmentAuthInfo = []
+def awsCreds
+def awsAccessKey
+def awsSecretAccessKey
+def rootDir
+def environment = "${env.ENVIRONMENT}"
+def dockerAgentImage = "${env.DOCKER_AGENT_IMAGE}"
+def dockerApplicationName = "${env.DOCKER_APP_NAME}"
+def dockerApplicationVersion = "${env.DOCKER_APP_VERSION}"
+
+try {
+  currentBuild.displayName = "# ${BUILD_NUMBER} | ${dockerApplicationVersion}"
+  node('okjkshmll002') {
+    checkoutInfo = checkout scm
+    stash name: "$checkoutInfo.GIT_COMMIT", excludes: "**/.terraform/**,ansible/roles/connect-direct/files/CDFtp_1.1.15_LinuxINTEL_16032010"
+  }
+  node('docker') {
+    unstash name: "$checkoutInfo.GIT_COMMIT"
+    environmentAuthInfo = setEnvironmentAuthInfo(useServiceCredentials, dockerAgentImage)
+    docker.image(dockerAgentImage).inside {
+      env.ANSIBLE_CONFIG = "./ansible/ansible.cfg"
+      withEnv(["PATH=${env.PATH}"] + environmentAuthInfo) {
+        stage("INICIAL") {
+          println "---------- ETAPA: Configurar el agente de Jenkins para trabajar en el ambiente $environment ----------"
+          ansiblePlaybook(
+                  playbook: "ansible/playbooks/jenkins/platform/configure_agent_environment.yml",
+                  inventory: "ansible/environments/$environment",
+                  extraVars: [
+                          "eks_cluster_kubeconfig_location" : "/home/jenkins/kubeconfig",
+                          "jenkins_role_arn"                : "${env.IAM_ROLE_ARN}",
+                  ],
+                  colorized: true,
+                  vaultCredentialsId: "oca-aws-ansible-vault-password"
+          )
+        }
+      }
+      stage("DEPLOY") {
+        println "---------- ETAPA: Desplegar aplicaciones en cluster de $environment----------"
+        ansiblePlaybook(
+                playbook: "ansible/playbooks/eks/platform/deploy_applications.yml",
+                inventory: "ansible/environments/$environment",
+                extraVars: [
+                        "eks_cluster_kubeconfig_location" : "/home/jenkins/kubeconfig",
+                        "eks_application_name" : dockerApplicationName,
+                        "eks_application_version" : dockerApplicationVersion
+                ],
+                colorized: true,
+                vaultCredentialsId: "oca-aws-ansible-vault-password",
+                extras: "-vvvv"
+        )
+      }
+    }
+  }
+} catch (Exception err) {
+    currentBuild.result = 'FAILURE'
+    throw err
 }
