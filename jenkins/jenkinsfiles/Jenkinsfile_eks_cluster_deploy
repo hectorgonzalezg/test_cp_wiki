@@ -1,4 +1,5 @@
 #!groovy
+
 pipeline {
     agent none // Permite definir agentes específicos para cada etapa
     stages {
