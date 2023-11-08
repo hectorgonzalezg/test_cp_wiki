@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Example') {
             steps {
-                echo 'La versión de la aplicación Docker es:'
+                echo "La version de la aplicacion Docker es: ${env.DOCKER_APP_VERSION}"
             }
         }
     }
