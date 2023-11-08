@@ -1,5 +1,4 @@
 #!groovy
-
 pipeline {
     agent none // Permite definir agentes específicos para cada etapa
     stages {
@@ -17,7 +16,7 @@ pipeline {
             // Limpieza: Eliminar la imagen Docker después del build, si así lo deseas
             cleanWs() // Limpia el workspace
             script {
-                // Este paso es opcional y solo necesario si deseas forzar la eliminación de la imagen después de cada build
+                // Este paso es opcional y solo necesario si deseas forzar la eliminación de la imagen después de cada build.
                 sh "docker rmi maven:3-alpine"
             }
         }
