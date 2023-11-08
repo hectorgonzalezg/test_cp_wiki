@@ -1,9 +1,11 @@
 pipeline {
     agent any
+
     stages {
-        stage('Example') {
+        stage('Print Docker App Version') {
             steps {
-                echo 'Hello World'
+                // Imprimir la versión de la aplicación Docker usando la variable de entorno
+                echo "La versión de la aplicación Docker es: ${env.DOCKER_APP_VERSION}"
             }
         }
     }
