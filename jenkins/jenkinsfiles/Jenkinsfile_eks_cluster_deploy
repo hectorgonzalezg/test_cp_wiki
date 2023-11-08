@@ -1,0 +1,25 @@
+#!groovy
+
+pipeline {
+    agent none // Permite definir agentes específicos para cada etapa
+    stages {
+        stage('Build') {
+            agent { docker { image 'maven:3-alpine' } }
+            steps {
+                // Pasos del build
+                sh 'mvn --version'
+            }
+        }
+        // Otros stages...
+    }
+    post {
+        always {
+            // Limpieza: Eliminar la imagen Docker después del build, si así lo deseas
+            cleanWs() // Limpia el workspace
+            script {
+                // Este paso es opcional y solo necesario si deseas forzar la eliminación de la imagen después de cada build
+                sh "docker rmi maven:3-alpine"
+            }
+        }
+    }
+}
