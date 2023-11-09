@@ -14,9 +14,23 @@ pipeline {
                     docker.build(env.DOCKER_AGENT_IMAGE, "-f ${env.DOCKERFILE_PATH} .")
                 }
             }
-        }
+        }    
+        stage('Test Tools Version') {
+            agent {
+                docker {
+                    image "${env.DOCKER_AGENT_IMAGE}" // Utiliza la imagen que construiste
+                    args '-u root' // Ejecuta como root si es necesario
+                }
+            }
+            steps {
+                // Ejecuta aws --version
+                sh 'aws --version'
+                
+                // Ejecuta terraform version
+                sh 'terraform version'
+            }
+        }   
     }
-
     post {
         always {
             
