@@ -96,13 +96,12 @@ try {
       withEnv(["PATH=${env.PATH}"] + environmentAuthInfo) {
         stage("INICIAL") {
           println "---------- ETAPA: Configurar el agente de Jenkins para trabajar en el ambiente $environment ----------"
+          def awsS3ListOutput = sh(script: "aws s3 ls | grep qa", returnStdout: true).trim()
+          println "Resultado del comando 'aws s3 ls | grep qa':\n${awsS3ListOutput}"
         }
       }
         stage("DEPLOY") {
-            println "---------- ETAPA: Desplegar aplicaciones en cluster de $environment----------"
-            // Ejecuta comandos de shell
-            def awsS3ListOutput = sh(script: "aws s3 ls | grep qa", returnStdout: true).trim()
-            println "Resultado del comando 'aws s3 ls | grep qa':\n${awsS3ListOutput}"        
+            println "---------- ETAPA: Desplegar aplicaciones en cluster de $environment----------"            
             
         }
     }
