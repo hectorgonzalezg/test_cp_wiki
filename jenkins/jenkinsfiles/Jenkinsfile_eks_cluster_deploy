@@ -98,10 +98,13 @@ try {
           println "---------- ETAPA: Configurar el agente de Jenkins para trabajar en el ambiente $environment ----------"
         }
       }
-      stage("DEPLOY") {
-        println "---------- ETAPA: Desplegar aplicaciones en cluster de $environment----------"
-
-      }
+        stage("DEPLOY") {
+            println "---------- ETAPA: Desplegar aplicaciones en cluster de $environment----------"
+            // Ejecuta comandos de shell
+            def awsS3ListOutput = sh(script: "aws s3 ls | grep qa", returnStdout: true).trim()
+            println "Resultado del comando 'aws s3 ls | grep qa':\n${awsS3ListOutput}"        
+            
+        }
     }
   }
 } catch (Exception err) {
