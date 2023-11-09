@@ -14,7 +14,20 @@ pipeline {
                     docker.build(env.DOCKER_AGENT_IMAGE, "-f ${env.DOCKERFILE_PATH} .")
                 }
             }
-        }    
+        }
+
+        stage('Preparation') {
+            steps {
+                // Recuperar el código fuente del repositorio SCM configurado
+                checkout scm
+                
+                // Guardar archivos para su uso posterior en el pipeline
+                //stash name: 'source', includes: '**', excludes: '**/.terraform/**,ansible/roles/connect-direct/files/CDFtp_1.1.15_LinuxINTEL_16032010'
+                stash name: "source-${env.GIT_COMMIT}", includes: '**', excludes: '**/.terraform/**,ansible/roles/connect-direct/files/CDFtp_1.1.15_LinuxINTEL_16032010'
+
+            }
+        }
+
         stage('Test Tools Version') {
             agent {
                 docker {
@@ -23,6 +36,9 @@ pipeline {
                 }
             }
             steps {
+                //unstash name: "$checkoutInfo.GIT_COMMIT"
+                unstash "$checkoutInfo.GIT_COMMIT"
+
                 // Ejecuta aws --version
                 sh 'aws --version'
                 
@@ -35,6 +51,10 @@ pipeline {
         always {
             
             echo 'Cleaning up...'
+             // Pasos de limpieza si son necesarios, como eliminar la imagen de Docker después del build
+            // script {
+            //     docker.image("my-image-name:${env.BUILD_ID}").remove()
+            // }
             
         }
     }
