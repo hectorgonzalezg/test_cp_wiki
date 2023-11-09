@@ -37,7 +37,7 @@ pipeline {
             }
             steps {
                 //unstash name: "$checkoutInfo.GIT_COMMIT"
-                unstash "$checkoutInfo.GIT_COMMIT"
+                unstash "source-${env.GIT_COMMIT}"
 
                 // Ejecuta aws --version
                 sh 'aws --version'
