@@ -1,7 +1,7 @@
-FROM debian:9.13
+FROM debian:bullseye
 WORKDIR /usr/src/app
-RUN apt update
-RUN apt install zip python3 python3-pip gcc musl-dev libffi-dev wget unzip curl git python3-dateutil jq -y && \
+RUN apt-get update && apt-get install -y \
+    zip python3 python3-pip gcc musl-dev libffi-dev wget unzip curl git python3-dateutil jq -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/
 RUN wget --quiet https://releases.hashicorp.com/terraform/0.13.6/terraform_0.13.6_linux_amd64.zip \
   && unzip terraform_0.13.6_linux_amd64.zip \
