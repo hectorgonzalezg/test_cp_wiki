@@ -1,10 +1,27 @@
 pipeline {
-    agent any
+    agent any // Utiliza el agente principal que ya tiene Docker instalado
+
+    environment {
+        
+        DOCKERFILE_PATH = 'jenkins/agent/deploy/Dockerfile' // La ubicacion de tu Dockerfile en el repositorio
+        //DOCKER_AGENT_IMAGE = 'ocaagent:latest' // El nombre de la imagen que deseas construir
+    }
+
     stages {
-        stage('Example') {
+        stage('Build Docker Image') {
             steps {
-                echo "La version de la aplicacion Docker es: ${env.DOCKER_APP_VERSION}"
+                script {                   
+                    docker.build(env.DOCKER_AGENT_IMAGE, "-f ${env.DOCKERFILE_PATH} .")
+                }
             }
+        }
+    }
+
+    post {
+        always {
+            
+            echo 'Cleaning up...'
+            
         }
     }
 }
