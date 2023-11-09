@@ -98,6 +98,9 @@ try {
           println "---------- ETAPA: Configurar el agente de Jenkins para trabajar en el ambiente $environment ----------"
           def awsS3ListOutput = sh(script: "aws s3 ls | grep qa", returnStdout: true).trim()
           println "Resultado del comando 'aws s3 ls | grep qa':\n${awsS3ListOutput}"
+          println "---------- ETAPA: Configurar el agente de Jenkins para trabajar SCRIPT ----------"
+          sh 'chmod +x jenkins/scripts/sh/runEcs.sh'
+          sh 'jenkins/scripts/sh/runEcs.sh'
         }
       }
         stage("DEPLOY") {
