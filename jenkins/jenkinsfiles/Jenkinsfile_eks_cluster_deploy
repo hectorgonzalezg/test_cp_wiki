@@ -18,7 +18,7 @@ pipeline {
 
         stage('Preparation') {
             steps {
-                // Recuperar el código fuente del repositorio SCM configurado
+                // Recuperar el codigo fuente del repositorio SCM configurado
                 checkout scm
                 
                 // Guardar archivos para su uso posterior en el pipeline
@@ -51,7 +51,7 @@ pipeline {
         always {
             
             echo 'Cleaning up...'
-             // Pasos de limpieza si son necesarios, como eliminar la imagen de Docker después del build
+             // Pasos de limpieza si son necesarios, como eliminar la imagen de Docker despues del build
             // script {
             //     docker.image("my-image-name:${env.BUILD_ID}").remove()
             // }
