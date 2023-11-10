@@ -1,0 +1,14 @@
+[
+  {
+    "name": "${service_name}",
+    "image": "026690518203.dkr.ecr.${region}.amazonaws.com/${image_name}:latest",
+    "essential": true,
+    "cpu": 256,
+    "memory": 512,
+    "portMappings": [
+      {
+        "containerPort": ${containerPort}
+      }
+    ]
+  }
+]

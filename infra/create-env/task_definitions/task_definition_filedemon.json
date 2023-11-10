@@ -1,0 +1,45 @@
+[
+  {
+    "name": "filebeat-elastic-cloud-daemon",
+    "image": "143407689206.dkr.ecr.us-east-1.amazonaws.com/filebeat:7.17.5",
+    "essential": true,
+    "cpu": 128,
+    "memory": 256,
+    "memoryReservation": 128,
+    "environment": [
+      {
+        "name": "ELASTICSEARCH_HOSTS",
+        "value": "https://paigo-observability.es.us-east-1.aws.found.io:9243"
+      },
+      {
+        "name": "ELASTICSEARCH_USERNAME",
+        "value": "paigo_ecs_filebeat"
+      },
+      {
+        "name": "ELASTICSEARCH_PASSWORD",
+        "value": "rhtKPc5T9mzGiFS"
+      }
+    ],
+    "mountPoints": [
+      {
+        "sourceVolume": "docker-sock",
+        "containerPath": "/var/run/docker.sock",
+        "readOnly": false
+      },
+      {
+        "sourceVolume": "docker-containers",
+        "containerPath": "/var/lib/docker/containers",
+        "readOnly": false
+      }
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/filebeat-daemon-${StackName}",
+        "awslogs-region": "us-east-1",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }
+]
+  
