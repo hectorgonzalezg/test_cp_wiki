@@ -11,6 +11,11 @@ WORKING_PATH="deploy/ecs/"
 DOCKER_IMAGE="${DOCKER_APP_IMAGE}"
 DOCKER_REPOSITORY="${DOCKER_REPOSITORY_WORK}"
 NOM_VAR_VERSION="${DOCKER_APP_VERSION}"
+# Check if a specific version was provided and verify it exists in the ECR repository before proceeding.
+if [[ -z "$NOM_VAR_VERSION" ]]; then
+  echo "No version was specified in DOCKER_APP_VERSION."
+  exit 1
+fi
 
 # Construct service and task JSON file paths with properly quoted variables
 SERVICE_DEFINITION_TEMPLATE="$WORKING_PATH$ENV/$SERVICE_NAME_REVISION-servicedef-template.json"
@@ -20,16 +25,18 @@ TASK_DEFINITION_TEMPLATE="$WORKING_PATH$ENV/$SERVICE_NAME_REVISION-taskdef-templ
 ECS_CLUSTER=$(jq --raw-output '.cluster' < "$SERVICE_DEFINITION_TEMPLATE")
 echo "ECS_CLUSTER: $ECS_CLUSTER"
 
-# Determine the latest Docker image version available in the ECR repository
-LATEST_VERSION=$(aws ecr describe-images --repository-name "$DOCKER_IMAGE" \
-                                         --image-ids imageTag=latest \
-                                         --query "imageDetails[0].imageTags[? @ != 'latest'] | [0]" \
-                                         --output text \
-                                         --region us-east-1)
-echo "LATEST_VERSION: $LATEST_VERSION"
+# Check if the specified version exists in the repository
+IMAGE_TAGS=$(aws ecr describe-images --repository-name "$DOCKER_IMAGE" \
+                                      --query 'imageDetails[*].imageTags[*]' \
+                                      --output text \
+                                      --region us-east-1)
 
-# Use the provided tentative version, or fall back to the latest version if none is provided
-VERSION_A_INSTALAR="${NOM_VAR_VERSION:-$LATEST_VERSION}"
+if ! [[ $IMAGE_TAGS =~ $NOM_VAR_VERSION ]]; then
+  echo "The specified version $NOM_VAR_VERSION does not exist in the ECR repository."
+  exit 1
+fi
+
+VERSION_A_INSTALAR="$NOM_VAR_VERSION"
 echo "VERSION_A_INSTALAR: $VERSION_A_INSTALAR"
 
 # Replace the Docker image tag placeholder in the task definition JSON with the actual version
