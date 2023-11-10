@@ -29,46 +29,6 @@
               {
                 "name": "LOGGING_LEVEL_COM_OCA_COMERCIOS_API",
                 "value": "debug"
-              },
-              {
-                "name": "NEW_RELIC_AGENT_ENABLED",
-                "value": "true"
-              },
-              {
-                "name": "NEW_RELIC_APP_NAME",
-                "value": "public-api-bff-qa-ecs"
-              },
-              {
-                "name": "OCA_COMERCIOS_ELASTICSEARCH_BASEURL",
-                "value": "https://vpc-oca-qa-qa-es-i5ha2aigotmof3ln4jexamtnhm.us-east-1.es.amazonaws.com"
-              },
-              {
-                "name": "OCA_COMERCIOS_ELASTICSEARCH_CUPONES_SIZE_PAGINATION",
-                "value": "2000"
-              },
-              {
-                "name": "OCA_COMERCIOS_ELASTICSEARCH_LIQUIDACIONES_INDEX",
-                "value": "cupones-portal-comercio-*"
-              },
-              {
-                "name": "OCA_COMERCIOS_ELASTICSEARCH_PASSWORD",
-                "value": "P44ssw00rd!!"
-              },
-              {
-                "name": "OCA_COMERCIOS_ELASTICSEARCH_SCROLL_TIME_SECONDS",
-                "value": "10"
-              },
-              {
-                "name": "OCA_COMERCIOS_ELASTICSEARCH_USER",
-                "value": "reader"
-              },
-              {
-                "name": "SERVER_SERVLETPATH",
-                "value": "/*"
-              },
-              {
-                "name": "SERVER_SERVLET_CONTEXTPATH",
-                "value": "/ocacomercios-api"
               }
             ],
             "essential": true

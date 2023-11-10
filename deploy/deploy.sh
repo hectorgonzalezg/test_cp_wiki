@@ -13,7 +13,7 @@ DOCKER_REPOSITORY="${DOCKER_REPOSITORY_WORK}"
 NOM_VAR_VERSION="${DOCKER_APP_VERSION}"
 # Check if a specific version was provided and verify it exists in the ECR repository before proceeding.
 if [[ -z "$NOM_VAR_VERSION" || "$NOM_VAR_VERSION" == "SELECT" ]]; then
-  echo "No version was specified in DOCKER_APP_VERSION."
+  echo "No version was specified. Please select a version to install."
   exit 1
 fi
 
