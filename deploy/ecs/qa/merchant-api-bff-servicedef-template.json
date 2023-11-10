@@ -1,0 +1,11 @@
+{
+    "cluster": "ocacomercios-qa",
+    "service": "merchant-api-bff",
+    "desiredCount": 1,
+    "deploymentConfiguration": {
+        "maximumPercent": 200,
+        "minimumHealthyPercent": 100
+    },
+    "taskDefinition": "merchant-api-bff:_TASK_NUM_",
+    "forceNewDeployment": true
+}

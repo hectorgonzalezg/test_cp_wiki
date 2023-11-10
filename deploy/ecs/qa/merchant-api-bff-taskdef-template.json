@@ -1,0 +1,79 @@
+{
+    "family": "merchant-api-bff",
+    "networkMode": "bridge",
+    "executionRoleArn": "arn:aws:iam::026690518203:role/ocacomercios-qa-task_definition",
+    "containerDefinitions": [
+        {
+            "name": "merchant-api-bff",
+            "image": "026690518203.dkr.ecr.us-east-1.amazonaws.com/qa-api-bff-merchants-api:_DOCKER_TAG_",
+            "cpu": 256,
+            "memory": 1024,
+            "memoryReservation": 768,
+            "logConfiguration": {
+              "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ocacomercioapibff",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "merchant-api-bff",
+                    "awslogs-create-group": "true"
+                }
+            },
+            "portMappings": [
+                {
+                    "containerPort": 8085,
+                    "hostPort": 0,
+                    "protocol": "tcp"
+                }
+            ],
+            "environment": [
+              {
+                "name": "LOGGING_LEVEL_COM_OCA_COMERCIOS_API",
+                "value": "debug"
+              },
+              {
+                "name": "NEW_RELIC_AGENT_ENABLED",
+                "value": "true"
+              },
+              {
+                "name": "NEW_RELIC_APP_NAME",
+                "value": "public-api-bff-qa-ecs"
+              },
+              {
+                "name": "OCA_COMERCIOS_ELASTICSEARCH_BASEURL",
+                "value": "https://vpc-oca-qa-qa-es-i5ha2aigotmof3ln4jexamtnhm.us-east-1.es.amazonaws.com"
+              },
+              {
+                "name": "OCA_COMERCIOS_ELASTICSEARCH_CUPONES_SIZE_PAGINATION",
+                "value": "2000"
+              },
+              {
+                "name": "OCA_COMERCIOS_ELASTICSEARCH_LIQUIDACIONES_INDEX",
+                "value": "cupones-portal-comercio-*"
+              },
+              {
+                "name": "OCA_COMERCIOS_ELASTICSEARCH_PASSWORD",
+                "value": "P44ssw00rd!!"
+              },
+              {
+                "name": "OCA_COMERCIOS_ELASTICSEARCH_SCROLL_TIME_SECONDS",
+                "value": "10"
+              },
+              {
+                "name": "OCA_COMERCIOS_ELASTICSEARCH_USER",
+                "value": "reader"
+              },
+              {
+                "name": "SERVER_SERVLETPATH",
+                "value": "/*"
+              },
+              {
+                "name": "SERVER_SERVLET_CONTEXTPATH",
+                "value": "/ocacomercios-api"
+              }
+            ],
+            "essential": true
+          }
+        ]
+
+
+}
