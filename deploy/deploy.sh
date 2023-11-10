@@ -21,7 +21,7 @@ ECS_CLUSTER=$(jq --raw-output '.cluster' < "$SERVICE_DEFINITION_TEMPLATE")
 echo "ECS_CLUSTER: $ECS_CLUSTER"
 
 # Determine the latest Docker image version available in the ECR repository
-LATEST_VERSION=$(aws ecr describe-images --repository-name "$DOCKER_REPOSITORY/$DOCKER_IMAGE" \
+LATEST_VERSION=$(aws ecr describe-images --repository-name "$DOCKER_IMAGE" \
                                          --image-ids imageTag=latest \
                                          --query "imageDetails[0].imageTags[? @ != 'latest'] | [0]" \
                                          --output text \
