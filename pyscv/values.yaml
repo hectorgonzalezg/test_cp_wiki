@@ -23,7 +23,7 @@ configMap:
 
 # Configuración de la imagen del contenedor
 image:
-  repository: <+artifact.imagePath>
+  repository: <+artifact.image>
   tag: <+artifact.tag>
   pullPolicy: IfNotPresent
 
