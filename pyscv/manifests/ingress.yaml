@@ -1,0 +1,29 @@
+{{- if .Values.ingressDomainName }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.appName }}-ingress-rules
+  namespace: {{ .Values.namespace }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/hsts: "true"
+    nginx.ingress.kubernetes.io/hsts-preload: "true"
+    nginx.ingress.kubernetes.io/hsts-include-subdomains: "true"
+    nginx.ingress.kubernetes.io/server-snippet: |
+      server_tokens off;
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: {{ .Values.ingressDomainName }}
+      http:
+        paths:
+          - path: /api/(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: {{ .Values.appName }}-svc
+                port:
+                  number: {{ .Values.servicePort }}
+{{- end }}

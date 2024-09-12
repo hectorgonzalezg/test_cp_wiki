@@ -1,0 +1,42 @@
+---
+# K8S / Harness
+envName: <+env.name>  # Nombre del entorno proporcionado por Harness
+appName: <+service.name>  # Nombre del servicio proporcionado por Harness
+servicePort: 5000  # Puerto del servicio
+namespace: <+service.name>-<+env.name>  # Namespace dinámico basado en el servicio y entorno
+ingressDomainName: <+serviceVariables.ingressDomainName>  # Nombre de dominio para el Ingress
+
+
+# Configuración del ServiceAccount
+serviceAccount:
+  create: true
+  name: <+service.name>-sa
+  annotations:
+    eks.amazonaws.com/role-arn: <+serviceVariables.roleArn>  # Anotación para asociar un ARN de rol IAM dinámico
+
+# Configuración del ConfigMap
+configMap:
+  name: <+service.name>-config  # Nombre del ConfigMap
+  data:  # Datos que se inyectarán en el ConfigMap
+    S3_BUCKET: <+serviceVariables.s3Bucket>  # Bucket S3 dinámico
+
+# Configuración de la imagen del contenedor
+image:
+  repository: <+artifact.imagePath>
+  tag: <+artifact.tag>
+  pullPolicy: IfNotPresent
+
+# Configuración del servicio (Service)
+service:
+  type: NodePort  # Tipo de servicio
+  nodePort: 31000  # NodePort configurado
+  port: 5000  # Puerto del servicio
+
+# Configuración de los recursos (CPU y Memoria)
+resources:
+  limits:
+    cpu: 100m  # Límite de CPU
+    memory: 128Mi  # Límite de Memoria
+  requests:
+    cpu: 100m  # Solicitud mínima de CPU
+    memory: 128Mi  # Solicitud mínima de Memoria
