@@ -5,7 +5,8 @@ appName: <+service.name>  # Nombre del servicio proporcionado por Harness
 servicePort: 5000  # Puerto del servicio
 namespace: <+service.name>-<+env.name>  # Namespace dinámico basado en el servicio y entorno
 ingressDomainName: <+serviceVariables.ingressDomainName>  # Nombre de dominio para el Ingress
-
+#Deployment
+replicaCount: 1
 
 # Configuración del ServiceAccount
 serviceAccount:
