@@ -1,0 +1,40 @@
+{
+    "family": "web-sync",
+    "networkMode": "awsvpc",
+    "taskRoleArn": "arn:aws:iam::442426890356:role/pyxis-aws-devops-own-role-task-service",
+    "executionRoleArn": "arn:aws:iam::442426890356:role/pyxis-aws-devops-own-role-task-execution",
+    "cpu": "256",  
+    "memory": "1024",
+    "requiresCompatibilities": ["FARGATE"],
+    "containerDefinitions": [
+        {
+            "name": "web-sync",
+            "image": "_ECR_REPO_URI_:_IMAGE_TAG_",
+            "cpu": 256,
+            "memory": 1024,
+            "logConfiguration": {
+              "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/containers-own-logs",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "web-sync"
+                }
+            },
+            "portMappings": [
+                {
+                    "containerPort": 8080,
+                    "protocol": "tcp"
+                }
+            ],
+            "environment": [
+              {
+                "name": "LOGGING_LEVEL_COM_OCA_COMERCIOS_API",
+                "value": "debug"
+              }
+            ],
+            "essential": true
+          }
+        ]
+
+
+}
