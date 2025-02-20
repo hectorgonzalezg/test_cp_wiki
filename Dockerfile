@@ -13,7 +13,7 @@ COPY app.py app.py
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Exponer el puerto en el que corre la aplicación
-EXPOSE 8085
+EXPOSE 8080
 
 # Comando por defecto para ejecutar la aplicación
 CMD ["python", "app.py"]
